@@ -1,3 +1,5 @@
+import { contact } from '../data'
+
 export default function About() {
   const stats = [
     { num: '12', label: 'лет опыта' },
@@ -52,7 +54,7 @@ export default function About() {
 
             <div className="flex gap-4 mt-10">
               <a
-                href="https://t.me/selezneva_design"
+                href={contact.telegramUrl}
                 className="flex items-center gap-2 px-5 py-3 border border-stone-300 text-stone-700 text-sm tracking-wider uppercase hover:border-stone-900 hover:text-stone-900 transition-colors"
                 target="_blank"
                 rel="noopener noreferrer"

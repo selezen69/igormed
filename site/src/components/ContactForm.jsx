@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { contact } from '../data'
 
 export default function ContactForm() {
   const [submitted, setSubmitted] = useState(false)
@@ -20,9 +21,9 @@ export default function ContactForm() {
             <h2 className="text-4xl md:text-5xl font-light text-white leading-tight mb-6">Обсудим<br /><span className="italic text-stone-400">ваш проект</span></h2>
             <p className="text-stone-400 leading-relaxed mb-8">Оставьте заявку — отвечу в течение дня. Расскажите о задаче, и я подготовлю предварительную концепцию.</p>
             <div className="space-y-4 text-sm text-stone-400">
-              <div className="flex items-center gap-3"><span className="w-8 h-px bg-stone-600" /><span>Москва и Московская область</span></div>
-              <div className="flex items-center gap-3"><span className="w-8 h-px bg-stone-600" /><a href="https://t.me/selezneva_design" className="hover:text-white transition-colors" target="_blank" rel="noopener noreferrer">Telegram: @selezneva_design</a></div>
-              <div className="flex items-center gap-3"><span className="w-8 h-px bg-stone-600" /><a href="tel:+79991234567" className="hover:text-white transition-colors">+7 999 123-45-67</a></div>
+              <div className="flex items-center gap-3"><span className="w-8 h-px bg-stone-600" /><span>{contact.address}</span></div>
+              <div className="flex items-center gap-3"><span className="w-8 h-px bg-stone-600" /><a href={contact.telegramUrl} className="hover:text-white transition-colors" target="_blank" rel="noopener noreferrer">Telegram: {contact.telegramHandle}</a></div>
+              <div className="flex items-center gap-3"><span className="w-8 h-px bg-stone-600" /><a href={contact.phoneHref} className="hover:text-white transition-colors">{contact.phone}</a></div>
             </div>
           </div>
           <div>
