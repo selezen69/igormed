@@ -36,6 +36,9 @@ jobs:
           BOT_TOKEN: ${{ secrets.TELEGRAM_ALERTS_BOT_TOKEN }}
           CHAT_ID: ${{ secrets.TELEGRAM_ALERTS_CHAT_ID }}
         run: |
-          curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+          echo "token length: ${#BOT_TOKEN}, chat_id length: ${#CHAT_ID}"
+          HTTP_CODE=$(curl -s -o /tmp/resp.json -w '%{http_code}' -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
             --data-urlencode chat_id="$CHAT_ID" \
-            --data-urlencode text="✅ работаю" > /dev/null
+            --data-urlencode text="✅ работаю")
+          echo "HTTP status: $HTTP_CODE"
+          cat /tmp/resp.json
