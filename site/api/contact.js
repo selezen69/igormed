@@ -1,3 +1,5 @@
+import { sendFailureAlert } from './_lib/alertBot.js'
+
 const budgetLabels = {
   '5-10': '5–10 млн ₽',
   '10-20': '10–20 млн ₽',
@@ -37,6 +39,7 @@ export default async function handler(req, res) {
 
   if (!botToken || !chatId) {
     console.error('TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID is not configured')
+    await sendFailureAlert('Заявки не отправляются: не настроен TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID')
     return res.status(500).json({ error: 'Отправка временно недоступна' })
   }
 
@@ -59,12 +62,14 @@ export default async function handler(req, res) {
     if (!telegramRes.ok) {
       const errorBody = await telegramRes.text()
       console.error('Telegram API error:', errorBody)
+      await sendFailureAlert(`Заявка с сайта не отправилась (Telegram API error): ${errorBody}`)
       return res.status(502).json({ error: 'Не удалось отправить заявку' })
     }
 
     return res.status(200).json({ ok: true })
   } catch (err) {
     console.error('Failed to send Telegram message:', err)
+    await sendFailureAlert(`Заявка с сайта не отправилась (исключение): ${err.message || err}`)
     return res.status(502).json({ error: 'Не удалось отправить заявку' })
   }
 }

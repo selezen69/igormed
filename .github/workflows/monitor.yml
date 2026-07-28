@@ -1,0 +1,41 @@
+name: Site Monitor
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # проверка доступности каждые 5 минут
+    - cron: '0 6 * * *'    # ежедневный heartbeat, 06:00 UTC (09:00 МСК)
+  workflow_dispatch:        # ручной запуск для проверки настройки
+
+env:
+  SITE_URL: https://unique-quokka-258965.netlify.app
+
+jobs:
+  uptime-check:
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '*/5 * * * *'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check site and alert on failure
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_ALERTS_BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.TELEGRAM_ALERTS_CHAT_ID }}
+        run: |
+          HOME_CODE=$(curl -s -o /dev/null -w '%{http_code}' -L "$SITE_URL/")
+
+          if [ "$HOME_CODE" != "200" ]; then
+            curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+              --data-urlencode chat_id="$CHAT_ID" \
+              --data-urlencode text="🚨 Главная страница $SITE_URL недоступна: HTTP $HOME_CODE" > /dev/null
+          fi
+
+  heartbeat:
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '0 6 * * *'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send daily heartbeat
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_ALERTS_BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.TELEGRAM_ALERTS_CHAT_ID }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+            --data-urlencode chat_id="$CHAT_ID" \
+            --data-urlencode text="✅ работаю" > /dev/null
