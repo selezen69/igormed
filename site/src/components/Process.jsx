@@ -10,7 +10,7 @@ export default function Process() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0">
           {processSteps.map((step, i) => (
-            <div key={step.num} className="relative p-8 border-b border-r border-stone-200 last:border-r-0 sm:[&:nth-child(2)]:border-r-0 lg:[&:nth-child(2)]:border-r lg:[&:nth-child(4)]:border-r-0">
+            <div key={step.num} className="relative p-8 border-b border-stone-200 last:border-r-0 sm:border-r sm:[&:nth-child(2)]:border-r-0 lg:[&:nth-child(2)]:border-r lg:[&:nth-child(4)]:border-r-0">
               <p className="text-6xl font-light text-stone-200 mb-6">{step.num}</p>
               <h3 className="text-xl font-light text-stone-900 mb-3">{step.title}</h3>
               <p className="text-sm text-stone-500 leading-relaxed">{step.text}</p>

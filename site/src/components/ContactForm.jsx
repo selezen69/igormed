@@ -4,12 +4,25 @@ import { contact } from '../data'
 
 export default function ContactForm() {
   const [submitted, setSubmitted] = useState(false)
+  const [submitError, setSubmitError] = useState(null)
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm()
 
   const onSubmit = async (data) => {
-    await new Promise(r => setTimeout(r, 800))
-    console.log('Form data:', data)
-    setSubmitted(true)
+    setSubmitError(null)
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body.error || 'Не удалось отправить заявку')
+      }
+      setSubmitted(true)
+    } catch (err) {
+      setSubmitError(err.message || 'Не удалось отправить заявку. Попробуйте позже.')
+    }
   }
 
   return (
@@ -40,7 +53,14 @@ export default function ContactForm() {
                   {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name.message}</p>}
                 </div>
                 <div>
-                  <input {...register('phone', { required: 'Введите телефон', pattern: { value: /^[\d\s\+\-\(\)]{7,20}$/, message: 'Неверный формат телефона' } })} placeholder="Телефон *" type="tel" className={`w-full bg-transparent border px-5 py-4 text-white placeholder-stone-500 focus:outline-none transition-colors ${errors.phone ? 'border-red-500' : 'border-stone-700 focus:border-stone-400'}`} />
+                  <input {...register('phone', {
+                    required: 'Введите телефон',
+                    pattern: { value: /^[\d\s\+\-\(\)]{7,20}$/, message: 'Неверный формат телефона' },
+                    validate: value => {
+                      const digits = value.replace(/\D/g, '')
+                      return (digits.length >= 10 && digits.length <= 15) || 'Введите корректный номер телефона'
+                    },
+                  })} placeholder="Телефон *" type="tel" className={`w-full bg-transparent border px-5 py-4 text-white placeholder-stone-500 focus:outline-none transition-colors ${errors.phone ? 'border-red-500' : 'border-stone-700 focus:border-stone-400'}`} />
                   {errors.phone && <p className="text-red-400 text-xs mt-1">{errors.phone.message}</p>}
                 </div>
                 <div>
@@ -57,6 +77,7 @@ export default function ContactForm() {
                 <button type="submit" disabled={isSubmitting} className="w-full py-4 bg-white text-stone-900 text-sm tracking-widest uppercase hover:bg-stone-100 disabled:opacity-50 transition-all">
                   {isSubmitting ? 'Отправка...' : 'Отправить заявку'}
                 </button>
+                {submitError && <p className="text-red-400 text-xs text-center">{submitError}</p>}
                 <p className="text-xs text-stone-600 text-center">Нажимая «Отправить», вы соглашаетесь с обработкой персональных данных</p>
               </form>
             )}

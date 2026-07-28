@@ -1,17 +1,37 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation, Pagination } from 'swiper/modules'
 import { portfolioItems } from '../data'
 
 function ProjectModal({ project, onClose }) {
+  const closeButtonRef = useRef(null)
+
+  useEffect(() => {
+    const previouslyFocused = document.activeElement
+    closeButtonRef.current?.focus()
+    const originalOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.body.style.overflow = originalOverflow
+      document.removeEventListener('keydown', handleKeyDown)
+      previouslyFocused?.focus?.()
+    }
+  }, [onClose])
+
   return (
-    <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4" onClick={onClose} role="dialog" aria-modal="true" aria-label={project.title}>
       <div className="relative w-full max-w-5xl bg-white" onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute top-4 right-4 z-10 w-10 h-10 bg-white/90 flex items-center justify-center text-stone-900 hover:bg-white transition-colors" aria-label="Закрыть">✕</button>
-        <Swiper modules={[Navigation, Pagination]} navigation pagination={{ clickable: true }} className="w-full aspect-[4/3]">
+        <button ref={closeButtonRef} onClick={onClose} className="absolute top-4 right-4 z-10 w-10 h-10 bg-white/90 flex items-center justify-center text-stone-900 hover:bg-white transition-colors" aria-label="Закрыть">✕</button>
+        <Swiper modules={[Navigation, Pagination]} navigation pagination={{ clickable: true }} className="w-full aspect-[4/3] [--swiper-theme-color:#1c1917]">
           {project.photos.map((src, i) => (
-            <SwiperSlide key={i}>
-              <img src={src} alt={`${project.title} — фото ${i + 1}`} className="w-full h-full object-cover" />
+            <SwiperSlide key={src}>
+              <img src={src} alt={`${project.title} — фото ${i + 1}`} className="w-full h-full object-cover" loading={i === 0 ? 'eager' : 'lazy'} />
             </SwiperSlide>
           ))}
         </Swiper>
@@ -51,14 +71,27 @@ export default function Portfolio() {
         </div>
         <div className="flex justify-center gap-2 mb-12">
           {types.map(t => (
-            <button key={t} onClick={() => setFilter(t)} className={`px-5 py-2 text-sm tracking-widest uppercase border transition-all ${filter === t ? 'bg-stone-900 text-white border-stone-900' : 'border-stone-300 text-stone-500 hover:border-stone-900 hover:text-stone-900'}`}>{t}</button>
+            <button key={t} type="button" onClick={() => setFilter(t)} aria-pressed={filter === t} className={`px-5 py-2 text-sm tracking-widest uppercase border transition-all ${filter === t ? 'bg-stone-900 text-white border-stone-900' : 'border-stone-300 text-stone-500 hover:border-stone-900 hover:text-stone-900'}`}>{t}</button>
           ))}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map(project => (
-            <article key={project.id} className="group cursor-pointer overflow-hidden" onClick={() => setSelected(project)}>
+            <article
+              key={project.id}
+              className="group cursor-pointer overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2"
+              onClick={() => setSelected(project)}
+              role="button"
+              tabIndex={0}
+              aria-label={`Открыть проект «${project.title}»`}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  setSelected(project)
+                }
+              }}
+            >
               <div className="relative overflow-hidden aspect-[4/3]">
-                <img src={project.photos[0]} alt={project.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                <img src={project.photos[0]} alt={project.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center">
                   <span className="opacity-0 group-hover:opacity-100 transition-opacity text-white text-sm tracking-widest uppercase border border-white px-4 py-2">Смотреть</span>
                 </div>
